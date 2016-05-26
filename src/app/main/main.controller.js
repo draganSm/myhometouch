@@ -13,6 +13,8 @@
 
     // the place name
     vm.placeName = null;
+    // used by auto-complete field
+    vm.place = null;
     // the resulting local time for the give place
     vm.currentTime = null;
     // offset (DST + raw) given in secs
