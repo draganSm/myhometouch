@@ -3,20 +3,31 @@
 
   angular
     .module('myhometouch.main', ['ngMap', 'google.places'])
+    .constant('updateInterval', 500)
+    .constant('timeFormat', 'HH:MM:ss a')
     .controller('MainController', MainController);
 
   /** @ngInject */
-  function MainController($scope, NgMap, timeZoneService) {
+  function MainController($scope, NgMap, timeZoneService, $timeout, updateInterval, timeFormat) {
     var vm = this;
 
-    // used by auto-complete field
-    vm.place = null;
+    // the place name
+    vm.placeName = null;
     // the resulting local time for the give place
     vm.currentTime = null;
+    // offset (DST + raw) given in secs
+    vm.offset = 0;
 
     NgMap.getMap().then(function (map) {
       vm.map = map;
     });
+
+    vm.updateTime = function() {
+      // find the time zone
+      var localTime = timeZoneService.getLocalTime(vm.offset);
+      vm.currentTime = localTime.format(timeFormat);
+      $timeout(vm.updateTime, updateInterval);
+    };
 
     $scope.$on('g-places-autocomplete:select', function (event, place) {
       var lat = place.geometry.location.lat();
@@ -28,11 +39,11 @@
         lng: lng
       };
       vm.map.setCenter(place.geometry.location);
+      vm.placeName = place.name;
 
       timeZoneService.getTimeZone(lat, lng).then(function(response) {
-        // find the time zone
-        var localTime = timeZoneService.getLocalTime(response.data.dstOffset + response.data.rawOffset);
-        vm.currentTime = localTime.format('HH:MM a');
+        vm.offset = response.data.dstOffset + response.data.rawOffset;
+        vm.updateTime();
       });
     });
   }
