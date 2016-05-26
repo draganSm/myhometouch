@@ -3,11 +3,12 @@
 
   angular
     .module('myhometouch.timeZone', [])
+    .constant('googleServiceUrl', 'https://maps.googleapis.com/maps/api/timezone/json')
     .factory('timeZoneService', timeZone);
 
 
   /** @ngInject */
-  function timeZone($http, moment) {
+  function timeZone($http, moment, googleServiceUrl) {
 
     /**
      * get the local time
@@ -38,7 +39,7 @@
         timestamp = parseInt(unixEpochMs/1000), // ms -> sec  conversion
         http = {
         method: 'get',
-        url: 'https://maps.googleapis.com/maps/api/timezone/json',
+        url: googleServiceUrl,
         params: {
           location: [lat, lng].join(','),
           timestamp: timestamp
